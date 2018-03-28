@@ -22,5 +22,5 @@ if (!empty($argv[2])) {
     fclose($handle);
 }
 
-$mageDiff = new MageDiff($oldPath,$newPath);
+$mageDiff = new Huebacca\MageDiff($oldPath,$newPath);
 $mageDiff->compare();
