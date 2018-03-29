@@ -4,38 +4,95 @@ namespace Huebacca;
 class MageDiff
 {
 
+    /**
+     * @var string
+     */
     protected $oldPath;
+    /**
+     * @var string
+     */
     protected $newPath;
+    /**
+     * @var string
+     */
     protected $oldVersion;
+    /**
+     * @var string
+     */
     protected $newVersion;
+    /**
+     * @var array
+     */
     protected $templateFiles = [];
+    /**
+     * @var array
+     */
     protected $modules = [];
+    /**
+     * @var array
+     */
     protected $modulesOverridden = [];
+    /**
+     * @var array
+     */
     protected $changedFiles = [];
+    /**
+     * @var array
+     */
     protected $overrideFiles = [];
+    /**
+     * @var array
+     */
     protected $moduleMap = [];
+    /**
+     * @var array
+     */
     protected $modulePathMap = [];
+    /**
+     * @var array
+     */
     protected $changedModuleFiles = [];
 
-    // Where modules will be found
+    /**
+     * Relative path where modules will be found
+     */
     const MAGENTO_BASE = 'vendor/magento';
-    // Where composer.json for magento can be found
+    /**
+     * Relative path where Magento 2's composer.json file can be found
+     */
     const MAGENTO_BASE_COMPOSER = 'vendor/magento/magento2-base/composer.json';
     // Pattern to match for module directories
+    /**
+     * Glob to match for module directories
+     */
     const MAGENTO_MODULE_PATTERN = 'module-*';
-    // Where template files will be located relative to module folder
+    /**
+     * Relative path where template files will be located from module folder
+     */
     const MAGENTO_BASE_MODULE_TEMPLATE = 'view/frontend/templates';
-    // Template files to examine
+    /**
+     * Template file types to look for
+     */
     const MAGENTO_TEMPLATE_FILES = 'phtml';
-    // Where module overrides would be found
+    /**
+     * Relative path where module overrides will be found
+     */
     const MAGENTO_MODULE_OVERRIDE_PATH = 'app/design/frontend';
 
+    /**
+     * MageDiff constructor.
+     * @param $oldPath
+     * @param $newPath
+     */
     public function __construct($oldPath, $newPath)
     {
         $this->oldPath = $this->addTrailingSlash($oldPath);
         $this->newPath = $this->addTrailingSlash($newPath);
     }
 
+    /**
+     * Main function to run comparison
+     */
     public function compare()
     {
         try {
@@ -118,6 +175,11 @@ class MageDiff
         }
     }
 
+    /**
+     * Step 1: Recursively scan directory tree
+     *
+     * @param $path
+     */
     private function scanPath($path)
     {
         if( !file_exists($path) ) {
@@ -154,6 +216,10 @@ class MageDiff
         $this->templateFiles = $templateFiles;
     }
 
+    /**
+     * Step 2: Compare files in old installation to files in new installation for differences
+     *
+     */
     private function compareFiles()
     {
         foreach( $this->templateFiles as $file) {
@@ -169,6 +235,10 @@ class MageDiff
         }
     }
 
+    /**
+     * Step 4: Find all modules and map them from module-path to Module_Name
+     *
+     */
     private function checkModules()
     {
         foreach( $this->changedFiles as $file ) {
@@ -193,6 +263,9 @@ class MageDiff
         }
     }
 
+    /**
+     * Step 5: Build directory tree of all module folders
+     */
     private function scanModules()
     {
         $moduleBasePath = $this->newPath . self::MAGENTO_MODULE_OVERRIDE_PATH;
@@ -216,6 +289,9 @@ class MageDiff
 
     }
 
+    /**
+     * Step 6: Scan all module directories for override files
+     */
     private function scanModuleOverrides()
     {
         $moduleBasePath = $this->newPath . self::MAGENTO_BASE_MODULE_TEMPLATE;
@@ -234,6 +310,9 @@ class MageDiff
     }
 
 
+    /**
+     * Check that provided and expected paths exist
+     */
     private function checkPaths()
     {
         $this->checkExists([
@@ -244,6 +323,11 @@ class MageDiff
         ]);
     }
 
+    /**
+     * Check that an array of paths exists
+     *
+     * @param $paths
+     */
     private function checkExists($paths)
     {
         foreach ($paths as $path) {
@@ -253,6 +337,12 @@ class MageDiff
         }
     }
 
+    /**
+     * Detect version of Magento 2 based on composer.json file (return false if not found)
+     *
+     * @param $basePath
+     * @return bool|string
+     */
     private function detectVersion($basePath)
     {
         $versionDetected = false;
@@ -268,7 +358,12 @@ class MageDiff
         return $versionDetected;
     }
 
-
+    /**
+     * Checks if path has trailing slash, and if not adds it
+     *
+     * @param $path
+     * @return string
+     */
     private function addTrailingSlash($path)
     {
         if (strlen($path) > 0 && $path{strlen($path)-1} != '/') {
